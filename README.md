@@ -2,12 +2,11 @@
 
 ## Daftar Isi
 1. [Deskripsi Proyek](#deskripsi-proyek)  
-2. [Struktur Direktori](#struktur-direktori)  
-3. [Kompilasi dan Jalankan](#kompilasi-dan-jalankan)  
-4. [Overview Implementasi](#overview-implementasi)  
+2. [Kompilasi dan Jalankan](#kompilasi-dan-jalankan)  
+3. [Overview Implementasi](#overview-implementasi)  
    - [Pengukuran Memori](#pengukuran-memori)  
    - [Metode Pengujian](#metode-pengujian)  
-5. [Detail Kode](#detail-kode)  
+4. [Detail Kode](#detail-kode)  
    - [1. B+ Tree](#1-b-tree)  
      - [Struktur Node](#struktur-node)  
      - [Operasi Dasar](#operasi-dasar)  
@@ -21,22 +20,14 @@
        - [Insert & Exact Search](#insert--exact-search)  
        - [Range Search (Brute-force)](#range-search-brute-force)  
        - [Update & Delete](#update--delete)  
-6. [Pengujian dan Hasil](#pengujian-dan-hasil)  
-7. [Kesimpulan](#kesimpulan)  
-8. [Referensi](#referensi)  
+5. [Pengujian dan Hasil](#pengujian-dan-hasil)  
+6. [Kesimpulan](#kesimpulan)  
+7. [Referensi](#referensi)  
 
 ---
 
 ## Deskripsi Proyek
 Proyek ini membandingkan dua struktur data populer—**B+ Tree** dan **Hash Map**—dalam konteks operasi dasar database (insert, exact search, range search, update, delete). Setiap struktur diuji pada ukuran input `n = 100`, `500`, dan `1 000` elemen acak.
-
----
-
-## Struktur Direktori
-```
-├── compare_bptree_hashmap.cpp   # Sumber kode implementasi
-└── README.md                    # Dokumen ini
-```
 
 ---
 
