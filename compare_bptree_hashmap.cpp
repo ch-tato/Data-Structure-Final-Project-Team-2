@@ -91,47 +91,73 @@ public:
         }
     }
 
-    pair<bool, pair<int,Node*>> insertInternal(Node* node, int key, int value) {
+    using InsertResult = std::pair<bool, std::pair<int, Node*>>;
+    InsertResult insertInternal(Node* node, int key, int value) {
         if (node->leaf) {
-            auto it = lower_bound(node->keys.begin(), node->keys.end(), key);
-            int idx = it - node->keys.begin();
-            if (it != node->keys.end() && *it == key) {
+
+            auto insert_pos = std::lower_bound(node->keys.begin(), node->keys.end(), key);
+            int idx = insert_pos - node->keys.begin();
+
+            if (insert_pos != node->keys.end() && *insert_pos == key) {
                 node->values[idx] = value;
                 return {false, {0, nullptr}};
             }
-            node->keys.insert(it, key);
+
+            node->keys.insert(insert_pos, key);
             node->values.insert(node->values.begin() + idx, value);
-            if ((int)node->keys.size() < order) return {false, {0, nullptr}};
-            int mid = node->keys.size() / 2;
-            Node* sibling = new Node(true);
-            sibling->keys.assign(node->keys.begin() + mid, node->keys.end());
-            sibling->values.assign(node->values.begin() + mid, node->values.end());
-            node->keys.resize(mid);
-            node->values.resize(mid);
-            sibling->next = node->next;
-            node->next = sibling;
-            int upKey = sibling->keys.front();
-            return {true, {upKey, sibling}};
+
+            if (node->keys.size() < order) {
+                return {false, {0, nullptr}};
+            }
+
+            int split_point = node->keys.size() / 2;
+            Node* new_sibling = new Node(true);
+            
+            new_sibling->keys.assign(node->keys.begin() + split_point, node->keys.end());
+            new_sibling->values.assign(node->values.begin() + split_point, node->values.end());
+            
+            node->keys.resize(split_point);
+            node->values.resize(split_point);
+            
+            new_sibling->next = node->next;
+            node->next = new_sibling;
+
+            int promoted_key = new_sibling->keys.front();
+            return {true, {promoted_key, new_sibling}};
         }
-        int idx = upper_bound(node->keys.begin(), node->keys.end(), key) - node->keys.begin();
-        auto child = node->children[idx];
-        auto splitInfo = insertInternal(child, key, value);
-        if (!splitInfo.first) return {false, {0, nullptr}};
-        int newKey = splitInfo.second.first;
-        Node* newNode = splitInfo.second.second;
-        auto itKey = upper_bound(node->keys.begin(), node->keys.end(), newKey);
-        int insertPos = itKey - node->keys.begin();
-        node->keys.insert(itKey, newKey);
-        node->children.insert(node->children.begin() + insertPos + 1, newNode);
-        if ((int)node->keys.size() < order) return {false, {0, nullptr}};
-        int mid = node->keys.size() / 2;
-        Node* sibling = new Node(false);
-        sibling->keys.assign(node->keys.begin() + mid + 1, node->keys.end());
-        sibling->children.assign(node->children.begin() + mid + 1, node->children.end());
-        int upKey2 = node->keys[mid];
-        node->keys.resize(mid);
-        node->children.resize(mid + 1);
-        return {true, {upKey2, sibling}};
+
+        auto child_pos = std::upper_bound(node->keys.begin(), node->keys.end(), key);
+        int child_idx = child_pos - node->keys.begin();
+
+        InsertResult child_result = insertInternal(node->children[child_idx], key, value);
+        if (!child_result.first) {
+            return child_result; 
+        }
+
+        int promoted_key = child_result.second.first;
+        Node* new_child = child_result.second.second;
+
+        auto key_pos = std::upper_bound(node->keys.begin(), node->keys.end(), promoted_key);
+        int insert_idx = key_pos - node->keys.begin();
+
+        node->keys.insert(key_pos, promoted_key);
+        node->children.insert(node->children.begin() + insert_idx + 1, new_child);
+
+        if (node->keys.size() < order) {
+            return {false, {0, nullptr}};
+        }
+
+        int split_point = node->keys.size() / 2;
+        Node* new_sibling = new Node(false);
+
+        new_sibling->keys.assign(node->keys.begin() + split_point + 1, node->keys.end());
+        new_sibling->children.assign(node->children.begin() + split_point + 1, node->children.end());
+
+        int parent_key = node->keys[split_point];
+        node->keys.resize(split_point);
+        node->children.resize(split_point + 1);
+        
+        return {true, {parent_key, new_sibling}};
     }
 
     bool update(int key, int newValue) {
